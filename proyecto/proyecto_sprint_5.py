@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import seaborn as sns
 
-df = pd.read_csv('Proyecto Integrador/dataset/games.csv')
+df = pd.read_csv('dataset/games.csv')
 print(df.head())
 
 #! Paso 2. Prepara los datos
@@ -58,16 +58,15 @@ plt.show()
 #TODO Observa cómo varían las ventas de una plataforma a otra. Elige las plataformas con las mayores ventas totales y construye una distribución basada en los datos de cada año. 
 #TODO Busca las plataformas que solían ser populares pero que ahora no tienen ventas. ¿Cuánto tardan generalmente las nuevas plataformas en aparecer y las antiguas en desaparecer?
 
-df_sales_plataform = df.groupby('platform')['total_sales'].sum().sort_values(ascending=False).head(10)
-df_sales_plataform.plot(kind='bar', figsize=(15, 5), title='Ventas totales por plataforma', xlabel='Plataforma', ylabel='Ventas totales')
+df_sales_platform = df.groupby('platform')['total_sales'].sum().sort_values(ascending=False).head(10) #Agrupamos por plataforma, sumamos las ventas totales, ordenamos de mayor a menor y tomamos los 10 primeros valores. 
+df_sales_platform.plot(kind='bar', figsize=(15, 5), title='Ventas totales por plataforma', xlabel='Plataforma', ylabel='Ventas totales') #Graficamos los datos
 plt.show() 
 
+df_sales_platform_year_pivot = df.pivot_table(index='year_of_release', columns='platform', values='total_sales', aggfunc='sum') #Creamos una tabla pivote con los datos de las ventas totales por año y plataforma
+top_platforms = df_sales_platform.index.tolist() #Creamos una lista con las plataformas que mas venden
+top_platforms_sales = df_sales_platform_year_pivot[top_platforms] #Filtramos la tabla pivote con las plataformas que mas venden
 
-df_sales_plataform_year = df.pivot_table(index='year_of_release', columns='platform', values='total_sales', aggfunc='sum')
-top_platforms = df_sales_plataform.index.tolist() 
-top_platforms_pivot = df_sales_plataform_year[top_platforms]
-
-top_platforms_pivot.plot(figsize=(15, 8), title='Ventas totales por año y plataforma')
+top_platforms_sales.plot(figsize=(15, 8), title='Ventas totales por año y plataforma')
 plt.xlabel('Año de Lanzamiento')
 plt.ylabel('Ventas Totales')
 plt.legend(title='Plataforma')
@@ -79,28 +78,27 @@ plt.show()
 
 #TODO Determina para qué período debes tomar datos. Para hacerlo mira tus respuestas a las preguntas anteriores. Los datos deberían permitirte construir un modelo para 2017.
 
-# Se tomaran los datos desde el año 2000 ya que es el año donde se tiene la mayor cantidad de datos y se puede hacer un analisis mas completo.
+# Se tomaran los datos desde el año 2000 ya que no se tienen tantos datos de los años anteriores.
 
 #TODO Trabaja solo con los datos que consideras relevantes. Ignora los datos de años anteriores.
 
-df = df.query('year_of_release >= 2000')
+df_sales_platform_year_2000 = df.query('year_of_release >= 2000') #Filtramos los datos desde el año 2000
 
 #TODO ¿Qué plataformas son líderes en ventas? ¿Cuáles crecen y cuáles se reducen? Elige varias plataformas potencialmente rentables.
 
-df_sales_plataform_top = df.groupby('platform')['total_sales'].sum().sort_values(ascending=False).head(10)
-df_sales_plataform_top.plot(kind='bar', figsize=(15, 5), title='Ventas totales por plataforma', xlabel='Plataforma', ylabel='Ventas totales')
-plt.show()
+df_sales_platform_year_2000_pivot = df_sales_platform_year_2000.pivot_table(index='year_of_release', columns='platform', values='total_sales', aggfunc='sum') #Creamos una tabla pivote con los datos de las ventas totales por año y plataforma.
 
-# Las plataformas que son lideres en ventas son la PS2, X360, PS3, Wii, DS, PS, GBA, PS4, PSP, PC.
+df_sales_plataform_year_2000_top = df_sales_platform_year_2000.groupby('platform')['total_sales'].sum().sort_values(ascending=False).head(10) #Agrupamos por plataforma, sumamos las ventas totales, ordenamos de mayor a menor y tomamos los 10 primeros valores.
 
-df_sales_plataform_year_2000 = df.pivot_table(index='year_of_release', columns='platform', values='total_sales', aggfunc='sum')
-top_platforms_pivot_2000 = df_sales_plataform_year_2000[top_platforms]
+# Las plataformas que son lideres en ventas son PS2, X360, PS3, Wii, DS, PS4, GBA, PSP, 3DS, XB.
 
-top_platforms_pivot_2000.plot(figsize=(15, 8), title='Ventas totales por año y plataforma')
+
+df_sales_platform_year_2000_pivot.plot(figsize=(15, 8), title='Ventas totales por año y plataforma')
 plt.xlabel('Año de Lanzamiento')
 plt.ylabel('Ventas Totales')
 plt.legend(title='Plataforma')
 plt.show()
+
 
 # PS2, X360, PS3 y Wii son líderes en ventas en sus respectivos períodos.
 # PS4 parece estar creciendo. PS2, X360, y PS3 han pasado su pico y están en declive. Wii tuvo un pico pero cayó rápidamente.
@@ -108,18 +106,24 @@ plt.show()
 
 #TODO Crea un diagrama de caja para las ventas globales de todos los juegos, desglosados por plataforma. ¿Son significativas las diferencias en las ventas? ¿Qué sucede con las ventas promedio en varias plataformas? Describe tus hallazgos.
 
-df_top_platforms = df[df['platform'].isin(top_platforms)]
-df_sales_platform_year_2000 = df_top_platforms.pivot_table(index='year_of_release', columns='platform', values='total_sales', aggfunc='sum')
-sns.boxplot(data=df_top_platforms, x='platform', y='total_sales')
+df_top_platforms = df.query('platform in @top_platforms')
+
+sns.boxplot(data=df, x='platform', y='total_sales', showfliers=True)
+plt.title('Ventas totales por plataforma')
+plt.xlabel('Plataforma')
+plt.ylabel('Ventas totales')
+plt.show()
+
+sns.boxplot(data=df, x='platform', y='total_sales', showfliers=False)
 plt.title('Ventas totales por plataforma')
 plt.xlabel('Plataforma')
 plt.ylabel('Ventas totales')
 plt.show()
 
 # Las diferencias en las ventas son significativas, ya que existen juegos que casi no venden y otros que son un exito total.
-# Las ventas promedio en varias plataformas son significativas, podemos ver la venta promedio de la plataforma GB es alrededor de 0.8 millones de copias mientras 
+# Las ventas promedio en varias plataformas son significativas, ya que existe una tendencia en que las ventas promedio de las plataformas mas vendidas son mayores a las de las plataformas que no son tan vendidas.
 # que otras plataformas tienen en promedio 0.4.
-# Si dejamos los valores atipicos al ver las cajas del boxplot se ven muy pequeñas y no se puede apreciar bien la informacion, por eso se decidio quitarlas. 
+# Si dejamos los valores atipicos al ver las cajas del boxplot se ven muy pequeñas y no se puede apreciar bien la informacion, por eso se crear dos graficas. 
 
 
 #TODO Mira cómo las reseñas de usuarios y profesionales afectan las ventas de una plataforma popular (tu elección). Crea un gráfico de dispersión y calcula la correlación entre las reseñas y las ventas. Saca conclusiones.
@@ -137,12 +141,20 @@ plt.xlabel('Calificacion de la critica')
 plt.ylabel('Ventas Totales')
 plt.show()
 
-df_ps2.dropna(subset=['user_score', 'critic_score'], inplace=True)
 print(df_ps2['user_score'].corr(df_ps2['total_sales']))
+
+# La calificacion de los usuarios no afecta significativamente a las ventas ya que no existe una correlacion entre las ventas y la calificacion de los usuarios.
+
 print(df_ps2['critic_score'].corr(df_ps2['total_sales']))
 
-
-
+# La calificacion de la critica si afecta a las ventas ya que existe una correlacion entre las ventas y la calificacion de la critica.
 
 #TODO Teniendo en cuenta tus conclusiones compara las ventas de los mismos juegos en otras plataformas.
+
+
+df_games_platform = df_sales_platform_year_2000.groupby(['name', 'platform'])['total_sales'].sum().reset_index() #Agrupamos por nombre y plataforma, sumamos las ventas totales y reiniciamos el indice.
+df_games_platform_pivot = df_games_platform.pivot(index='name', columns='platform', values='total_sales')
+df_games_platform_pivot_not_nan = df_games_platform_pivot.dropna(tresh=2)
+
+
 #TODO Echa un vistazo a la distribución general de los juegos por género. ¿Qué se puede decir de los géneros más rentables? ¿Puedes generalizar acerca de los géneros con ventas altas y bajas?
