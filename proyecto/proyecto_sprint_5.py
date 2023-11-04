@@ -143,18 +143,20 @@ plt.show()
 
 print(df_ps2['user_score'].corr(df_ps2['total_sales']))
 
-# La calificacion de los usuarios no afecta significativamente a las ventas ya que no existe una correlacion entre las ventas y la calificacion de los usuarios.
+# La calificacion de los usuarios afecta en baja medida a las ventas ya que existe una correlacion entre las ventas y la calificacion de los usuarios.
 
 print(df_ps2['critic_score'].corr(df_ps2['total_sales']))
 
-# La calificacion de la critica si afecta a las ventas ya que existe una correlacion entre las ventas y la calificacion de la critica.
+# La calificacion de la critica si es significativa ya que existe una correlacion entre las ventas y la calificacion de la critica.
 
 #TODO Teniendo en cuenta tus conclusiones compara las ventas de los mismos juegos en otras plataformas.
 
 
 df_games_platform = df_sales_platform_year_2000.groupby(['name', 'platform'])['total_sales'].sum().reset_index() #Agrupamos por nombre y plataforma, sumamos las ventas totales y reiniciamos el indice.
-df_games_platform_pivot = df_games_platform.pivot(index='name', columns='platform', values='total_sales')
-df_games_platform_pivot_not_nan = df_games_platform_pivot.dropna(tresh=2)
+df_games_platform_pivot = df_games_platform.pivot(index='name', columns='platform', values='total_sales') # Creamos una tabla pivote donde los indices seran los juegos, las columnas las plataformas y los valores las ventas
+df_games_platform_pivot_not_nan = df_games_platform_pivot.dropna(thresh=2) # Aqui solo dejamos los juegos que por lo menos tienen 2 valores en las celdas para eliminar los juegos que solo salieron en una plataforma
+
+df_games_platform_pivot_not_nan.plot(data=df_games_platform_pivot_not_nan, )
 
 
 #TODO Echa un vistazo a la distribución general de los juegos por género. ¿Qué se puede decir de los géneros más rentables? ¿Puedes generalizar acerca de los géneros con ventas altas y bajas?
