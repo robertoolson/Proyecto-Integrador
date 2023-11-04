@@ -6,7 +6,7 @@ import seaborn as sns
 df = pd.read_csv('dataset/games.csv')
 print(df.head())
 
-#! Paso 2. Prepara los datos
+#! Paso 2. Prepara los datosclear
 #TODO Reemplaza los nombres de las columnas (ponlos en minúsculas).
 
 df.columns = df.columns.str.lower()
@@ -128,7 +128,7 @@ plt.show()
 
 #TODO Mira cómo las reseñas de usuarios y profesionales afectan las ventas de una plataforma popular (tu elección). Crea un gráfico de dispersión y calcula la correlación entre las reseñas y las ventas. Saca conclusiones.
 
-df_ps2 = df.query('platform == "PS"')
+df_ps2 = df.query('platform == "PS2"')
 df_ps2.plot(x='user_score', y='total_sales', kind='scatter', figsize=(15, 8))
 plt.xlabel('Calificacion del usuario')
 plt.ylabel('Ventas Totales')
@@ -141,22 +141,42 @@ plt.xlabel('Calificacion de la critica')
 plt.ylabel('Ventas Totales')
 plt.show()
 
+
 print(df_ps2['user_score'].corr(df_ps2['total_sales']))
 
 # La calificacion de los usuarios afecta en baja medida a las ventas ya que existe una correlacion entre las ventas y la calificacion de los usuarios.
 
-print(df_ps2['critic_score'].corr(df_ps2['total_sales']))
+print(df_ps2_critic_score.corr(df_ps2['total_sales']))
 
 # La calificacion de la critica si es significativa ya que existe una correlacion entre las ventas y la calificacion de la critica.
 
+print(df['critic_score'].astype('float64').corr(df['user_score']))
+
 #TODO Teniendo en cuenta tus conclusiones compara las ventas de los mismos juegos en otras plataformas.
 
+platform_count_per_game = df.groupby('name')['platform'].nunique() #Agrupamos por nombre de juego y contamos la cantidad de plataformas en las que se lanzo el juego.
+games_in_multiple_platforms = platform_count_per_game[platform_count_per_game >= 2].index #Filtramos los juegos que se lanzaron en mas de una plataforma.
+df_top_games_in_multiple_platforms = df.groupby('name')['total_sales'].sum()[df['name'].isin(games_in_multiple_platforms)] #Agrupamos por nombre de juego y sumamos las ventas totales de los juegos que se lanzaron en mas de una plataforma.
+df_top_games_multiplatform = df_total_sales_multiplatform.sort_values(ascending=False).head(10) #Filtramos los datos con los juegos que se lanzaron en mas de una plataforma y tomamos los 10 primeros valores.
 
-df_games_platform = df_sales_platform_year_2000.groupby(['name', 'platform'])['total_sales'].sum().reset_index() #Agrupamos por nombre y plataforma, sumamos las ventas totales y reiniciamos el indice.
-df_games_platform_pivot = df_games_platform.pivot(index='name', columns='platform', values='total_sales') # Creamos una tabla pivote donde los indices seran los juegos, las columnas las plataformas y los valores las ventas
-df_games_platform_pivot_not_nan = df_games_platform_pivot.dropna(thresh=2) # Aqui solo dejamos los juegos que por lo menos tienen 2 valores en las celdas para eliminar los juegos que solo salieron en una plataforma
+df_top_multiplatform_games = df_top_multiplatform_games.index.tolist() #Creamos una lista con los juegos que se lanzaron en mas de una plataforma.
+df_top_games_details = df[df['name'].isin(df_top_multiplatform_games)] # Filtramos los datos con los juegos que se lanzaron en mas de una plataforma.
+df_top_games_pivot_table = df_top_games_details.pivot_table(index='name', columns='platform', values='total_sales', aggfunc='sum', fill_value=0) #Creamos una tabla pivote con los datos de las ventas totales por juego y plataforma.
+df_top_games_pivot_table = df_top_games_pivot_table.reindex(df_top_multiplatform_games) #Reordenamos la tabla pivote con los juegos que se lanzaron en mas de una plataforma.
 
-df_games_platform_pivot_not_nan.plot(data=df_games_platform_pivot_not_nan, )
+
+colors = ['red', 'green', 'blue', 'orange', 'purple', 'cyan', 'magenta', 'yellow', 'grey', 'pink', 'black', 'brown']
+plt.figure(figsize=(14, 10)) 
+df_top_games_pivot_table.plot(kind='bar', figsize=(14, 8), width=0.8, color=colors) #Graficamos los datos
+
+plt.title('Comparación de Ventas por Plataforma de los Juegos Más Vendidos')
+plt.ylabel('Ventas Totales (en millones)')
+plt.xlabel('Juego')
+plt.legend(title='Plataforma', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
 
 
 #TODO Echa un vistazo a la distribución general de los juegos por género. ¿Qué se puede decir de los géneros más rentables? ¿Puedes generalizar acerca de los géneros con ventas altas y bajas?
