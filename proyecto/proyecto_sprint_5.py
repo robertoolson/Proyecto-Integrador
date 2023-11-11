@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import show
 import seaborn as sns
 
-df = pd.read_csv('/datasets/games.csv')
+df = pd.read_csv('/Volumes/Ugreen SSD 1/Visual Studio/Tripleten/SPRINTS/Sprint_5/Proyecto Integrador/dataset/games.csv')
 print(df.head())
 print()
 print(df.info())
